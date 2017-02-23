@@ -10,12 +10,13 @@ gcr.io/google_containers/kube-proxy-amd64                v1.5.1
 gcr.io/google_containers/kube-scheduler-amd64            v1.5.1
 gcr.io/google_containers/kubernetes-dashboard-amd64      v1.5.0
 gcr.io/google_containers/etcd-amd64                      3.0.14-kubeadm
+gcr.io/google_containers/kube-discovery-amd64            1.0
+gcr.io/google_containers/pause-amd64                     3.0
 gcr.io/google_containers/kubedns-amd64                   1.9
 gcr.io/google_containers/dnsmasq-metrics-amd64           1.0
 gcr.io/google_containers/kube-dnsmasq-amd64              1.4
-gcr.io/google_containers/kube-discovery-amd64            1.0
 gcr.io/google_containers/exechealthz-amd64               1.2
-gcr.io/google_containers/pause-amd64                     3.0
+gcr.io/google_containers/node-problem-detector           0.1
 ```
 
 ## docker hub上设置
@@ -36,29 +37,3 @@ for imageName in ${images[@]} ; do
   docker tag ist0ne/$imageName kubernetes/$imageName
 done
 ```
-
-## 安装必要的软件包
-```
-yum install -y ebtables socat
-rpm -ivh https://packages.cloud.google.com/yum/pool/5612db97409141d7fd839e734d9ad3864dcc16a630b2a91c312589a0a0d960d0-kubeadm-1.6.0-0.alpha.0.2074.a092d8e0f95f52.x86_64.rpm
-rpm -ivh https://packages.cloud.google.com/yum/pool/93af9d0fbd67365fa5bf3f85e3d36060138a62ab77e133e35f6cadc1fdc15299-kubectl-1.5.1-0.x86_64.rpm
-rpm -ivh https://packages.cloud.google.com/yum/pool/567600102f687e0f27bd1fd3d8211ec1cb12e71742221526bb4e14a412f4fdb5-kubernetes-cni-0.3.0.1-0.07a8a2.x86_64.rpm
-rpm -ivh https://packages.cloud.google.com/yum/pool/8a299eb1db946b2bdf01c5d5c58ef959e7a9d9a0dd706e570028ebb14d48c42e-kubelet-1.5.1-0.x86_64.rpm
-```
-
-## 通过kubeadm安装
-```
-kubeadm init --use-kubernetes-version v1.5.1
-```
-### 当通过kubeadm安装后，还需要安装网络
-由于 pod 可能运行在不同的机器上，所以为了能让 pod 互相通信，就需要安装 pod 网络。这里使用的方案就是 weave net:
-```
-kubectl apply -f https://git.io/weave-kube
-```
-因为之前的 kube-dns addon 是依赖 pod 网络的，所以在没有部署 pod 网络之前，kube-dns 都会报错，因此只需要检查 kube-dns 是否成功就知道 pod 网络有没有成功了。
-```
-kubectl get pods --all-namespaces
-```
-
-## 如果docker hub也不能访问
-如果docker hub也不能访问，那么可以通过daocloud的加速，它会在docker的配置--registry-mirro中加一个镜像服务器，但是通过它还是不能访问google container的镜像，所以还是需要上面在docker hub中配置
